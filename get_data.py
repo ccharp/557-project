@@ -7,6 +7,14 @@ WDI_XLSX = os.path.join(DATA_DIR, "WDIEXCEL.xlsx")  # world development indicato
 WDI_ZIP = os.path.join(DATA_DIR, "WDIEXCEL.zip")
 CT_CSV = os.path.join(DATA_DIR, "CT.csv")  # world development indicators
 NORMALIZED_CO2_DATA = os.path.join(DATA_DIR, "NORMALIZED_CO2_DATA.csv")
+ANNUAL_MEAN_CO2 = os.path.join(DATA_DIR, "ANNUAL_MEAN_CO2.csv")
+ANNUAL_MEAN_GROWTH_CO2 = os.path.join(DATA_DIR, "ANNUAL_MEAN_GROWTH_CO2.csv")
+ANNUAL_MEAN_CH4 = os.path.join(DATA_DIR, "ANNUAL_MEAN_CH4.txt")
+ANNUAL_MEAN_GROWTH_CH4 = os.path.join(DATA_DIR, "ANNUAL_MEAN_GROWTH_CH4.txt")
+ANNUAL_MEAN_N2O = os.path.join(DATA_DIR, "ANNUAL_MEAN_N2O.txt")
+ANNUAL_MEAN_GROWTH_N2O = os.path.join(DATA_DIR, "ANNUAL_MEAN_GROWTH_N2O.txt")
+ANNUAL_MEAN_SF6 = os.path.join(DATA_DIR, "ANNUAL_MEAN_SF6.txt")
+ANNUAL_MEAN_GROWTH_SF6 = os.path.join(DATA_DIR, "ANNUAL_MEAN_GROWTH_SF6.txt")
 
 if not os.path.isdir(DATA_DIR):
     os.makedirs(DATA_DIR)
@@ -67,6 +75,47 @@ fetch_data(
     NORMALIZED_CO2_DATA,
     "Normalized CO2",
     "https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv",
+)
+
+fetch_data(
+    ANNUAL_MEAN_CO2,
+    "Annual marine surface CO2",
+    "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_annmean_gl.csv",
+)
+fetch_data(
+    ANNUAL_MEAN_GROWTH_CO2,
+    "Annual marine surface CO2 growth",
+    "https://gml.noaa.gov/webdata/ccgg/trends/co2/co2_gr_gl.csv",
+)
+fetch_data(
+    ANNUAL_MEAN_CH4,
+    "Annual marine surface CH4",
+    "https://gml.noaa.gov/webdata/ccgg/trends/ch4/ch4_annmean_gl.txt",
+)
+fetch_data(
+    ANNUAL_MEAN_GROWTH_CH4,
+    "Annual marine surface CH4 growth",
+    "https://gml.noaa.gov/webdata/ccgg/trends/ch4/ch4_gr_gl.txt",
+)
+fetch_data(
+    ANNUAL_MEAN_N2O,
+    "Annual marine surface N2O",
+    "https://gml.noaa.gov/webdata/ccgg/trends/n2o/n2o_annmean_gl.txt",
+)
+fetch_data(
+    ANNUAL_MEAN_GROWTH_N2O,
+    "Annual marine surface N2O growth",
+    "https://gml.noaa.gov/webdata/ccgg/trends/n2o/n2o_gr_gl.txt",
+)
+fetch_data(
+    ANNUAL_MEAN_SF6,
+    "Annual marine surface SF6",
+    "https://gml.noaa.gov/webdata/ccgg/trends/sf6/sf6_annmean_gl.txt",
+)
+fetch_data(
+    ANNUAL_MEAN_GROWTH_SF6,
+    "Annual marine surface SF6 growth",
+    "https://gml.noaa.gov/webdata/ccgg/trends/sf6/sf6_gr_gl.txt",
 )
 
 print("Data successfully downloaded to ./data")
