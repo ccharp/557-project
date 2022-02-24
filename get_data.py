@@ -2,6 +2,8 @@ import os
 import urllib.request
 import zipfile
 
+from clean import clean
+
 DATA_DIR = "data"
 WDI_XLSX = os.path.join(DATA_DIR, "WDIEXCEL.xlsx")  # world development indicators
 WDI_ZIP = os.path.join(DATA_DIR, "WDIEXCEL.zip")
@@ -47,7 +49,6 @@ def fetch_data(
             with zipfile.ZipFile(destination_path, "r") as z:
                 z.extractall(DATA_DIR)
             os.remove(destination_path)
-        print("Done!")
 
 
 # Fetch datasets
@@ -70,3 +71,6 @@ fetch_data(
 )
 
 print("Data successfully downloaded to ./data")
+print("Cleaning data...")
+clean(os.path.join(DATA_DIR, "wdi_cleaned.csv"))
+print("Cleaned dataset: ./data/wdi_cleaned.csv")
