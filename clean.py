@@ -1,3 +1,4 @@
+from re import I
 import pandas as pd
 import os
 
@@ -339,22 +340,40 @@ def clean(output_file):
     wdi_ind_pivot["Region"] = ""
     for region_name, countries in region_map.items():
         wdi_ind_pivot["Region"] = wdi_ind_pivot.apply(
-            lambda r: region_name if r["Country Name"] in countries else r["Region"],
+            lambda row: region_name
+            if row["Country Name"] in countries
+            else row["Region"],
             axis=1,
         )
 
-    def classify_income(gni):
-        if gni > 12696:
-            return "High income"
-        elif gni > 4096:
-            return "Upper middle income"
-        elif gni > 1054:
-            return "Lower middle income"
-        else:
-            return "Low income"
+    # TODO remove this line
+    # wdi_ind_pivot = pd.read_csv(output_file)
 
-    wdi_ind_pivot["Income Level"] = wdi_ind_pivot.apply(
-        lambda r: classify_income(r["GNI per capita, Atlas method (current US$)"]),
+    income_mappings = {}
+
+    def classify_income(country, gni):
+        income_class = ""
+        if gni > 12696:
+            income_class = "High income"
+        elif gni > 4096:
+            income_class = "Upper middle income"
+        elif gni > 1054:
+            income_class = "Lower middle income"
+        else:
+            income_class = "Low income"
+
+        income_mappings[country] = income_class
+
+    wdi_2018 = wdi_ind_pivot[wdi_ind_pivot["Year"] == "2018"]
+    wdi_2018.apply(
+        lambda row: classify_income(
+            row["Country Name"], row["GNI per capita, Atlas method (current US$)"]
+        ),
+        axis=1,
+    )
+
+    wdi_ind_pivot["Income"] = wdi_ind_pivot.apply(
+        lambda row: income_mappings[row["Country Name"]],
         axis=1,
     )
 
