@@ -1,0 +1,416 @@
+---
+title: "main"
+output: pdf_document
+---
+Initialize
+
+Import all modules & packages
+```{r}
+
+```
+
+Aquire and clean data
+```{r}
+
+```
+
+#####Part 1: Characterizing GHG trends from 1990 - 2018 (Will be done in Python)######
+####Plot series #1 (a): Are there observable patterns (linear, exponential) of GHG emissions from 1990 - 2018? What do those patterns look like when countries are grouped by region or income?####
+
+Plot series #1: Totals (i)
+Plot #1 a i 1: Plot pattern of Total GHG emissions for the world. Find pattern
+```{r}
+
+```
+Plot #1 a i 2: Plot pattern of Total GHG emissions grouped by income. Find pattern
+```{r}
+
+```
+Plot #1 a i 3: Plot pattern of Total GHG emissions grouped by region. Find pattern
+```{r}
+
+```
+
+Plot series #1: % of total (ii)
+Plot #1 a ii 1: Plot pattern of % of total GHG emissions for the world. Find pattern
+```{r}
+
+```
+Plot #1 a ii 2: Plot pattern of % of total GHG emissions grouped by income. Find pattern
+```{r}
+
+```
+Plot #1 a ii 3: Plot pattern of % of total GHG emissions grouped by region. Find pattern
+```{r}
+
+```
+
+Plot series #1: per capita (iii)
+Plot #1 a ii 1: Plot pattern of per capita GHG emissions for the world. Find pattern
+```{r}
+
+```
+Plot #1 a ii 2: Plot pattern of per capita GHG emissions grouped by income. Find pattern
+```{r}
+
+```
+Plot #1 a ii 3: Plot pattern of per capita GHG emissions grouped by region. Find pattern
+```{r}
+
+```
+
+####Part 2: Analyzing a snapshot (2018) of GHG emissions by country####
+####Analysis #1: Are there observable differences in GHG emissions for 2018 amongst different country groupings (region and income groups)?####
+####Analysis #1 a: Checking ANOVA test assumptions for region and income groupings, where the null hypothesis is that the per capita emissions are equal for the different groupings.####
+Assumptions check for ANOVA test for region
+```{r}
+
+```
+Assumptions check for ANOVA test for income
+```{r}
+
+```
+####Analysis #1 b: ANOVA test for region and income groupings, where the null hypothesis is that the per capita emissions are equal for the different groupings.####
+
+ANOVA test for region
+```{r}
+
+```
+ANOVA test for income
+```{r}
+
+```
+
+####Analysis #1 c: Box plots to understand which groupings are the most different####
+```{r}
+
+```
+####Analysis #1 d: Perform t-tests for the most interesting differences. Arrive to conclusions####
+```{r}
+
+```
+
+####Analysis #2: Which variables are related to GHG emissions? ####
+####Analysis #2 a: Linear Regression analysis to understand relationships####
+####Analysis #2 a i: Electricity #####
+####Analysis #2 a i 1: Log(GHG Emissions) ~ Electricity ####
+Check if assumptions are being met for Log(Emissions)
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+Log(GHG Emissions) ~ Electricity + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+Log(GHG Emissions) ~ Electricity + region
+```{r}
+
+```
+
+
+####Analysis #2 a i 2: GHG Emissions per capita ~ Electricity ####
+Check if assumptions are being met for GHG Emissions per capita
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions per capita ~ Electricity + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions per capita ~ Electricity + region
+```{r}
+
+```
+
+####Analysis #2 a i 3: GHG Emissions % of total ~ Electricity ####
+Check if assumptions are being met for GHG Emissions % of total
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions % of total ~ Electricity + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions % of total ~ Electricity + region
+```{r}
+
+```
+
+####Analysis #2 b i: Further exploration ####
+```{r}
+
+```
+####Analysis #2 a ii: Land use (Agricultural, Arable or Permanent crops) #####
+####Analysis #2 a ii 1: Log(GHG Emissions) ~ Land use ####
+Check if assumptions are being met for Log(Emissions)
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+Log(GHG Emissions) ~ Land use + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+Log(GHG Emissions) ~ Land use + region
+```{r}
+
+```
+
+####Analysis #2 a ii 2: GHG Emissions per capita ~ Land use ####
+Check if assumptions are being met for GHG Emissions per capita
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions per capita ~ Land use + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions per capita ~ Land use + region
+```{r}
+
+```
+
+####Analysis #2 a ii 3: GHG Emissions % of total ~ Land use ####
+Check if assumptions are being met for GHG Emissions % of total
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions % of total ~ Land use + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions % of total ~ Land use + region
+```{r}
+
+```
+####Analysis #2 b ii: Further exploration ####
+```{r}
+
+```
+
+####Analysis #2 a iii: GDP or GDP Growth#####
+####Analysis #2 a iii 1: Log(GHG Emissions) ~ GDP ####
+Check if assumptions are being met for Log(Emissions)
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+Log(GHG Emissions) ~ GDP + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+Log(GHG Emissions) ~ GDP + region
+```{r}
+
+```
+
+####Analysis #2 a iii 2: GHG Emissions per capita ~ GDP ####
+Check if assumptions are being met for GHG Emissions per capita
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions per capita ~ GDP + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions per capita ~ GDP + region
+```{r}
+
+```
+
+####Analysis #2 a iii 3: GHG Emissions % of total ~ GDP####
+Check if assumptions are being met for GHG Emissions % of total
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions % of total ~ GDP + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions % of total ~ GDP + region
+```{r}
+
+```
+
+####Analysis #2 b iii: Further exploration ####
+```{r}
+
+```
+
+####Analysis #2 a iv: Urban-to-rural ratio or population density#####
+####Analysis #2 a iv 1: Log(GHG Emissions) ~ Population ####
+Check if assumptions are being met for Log(Emissions)
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+Log(GHG Emissions) ~ Population + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+Log(GHG Emissions) ~ Population + region
+```{r}
+
+```
+
+####Analysis #2 a iv 2: GHG Emissions per capita ~ Population####
+Check if assumptions are being met for GHG Emissions per capita
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions per capita ~ Population + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions per capita ~ Population + region
+```{r}
+
+```
+
+####Analysis #2 a iv 3: GHG Emissions % of total ~ Population####
+Check if assumptions are being met for GHG Emissions % of total
+```{r}
+
+```
+Are robust methods or transformations necessary?
+```{r}
+
+```
+Create the linear regression model
+```{r}
+
+```
+Include stratification by income and perform F-tests.
+GHG Emissions % of total ~ Population + Income
+```{r}
+
+```
+Include stratification by region and perform F-tests.
+GHG Emissions % of total ~ Population + region
+```{r}
+
+```
+
+####Analysis #2 b iv: Further exploration ####
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
