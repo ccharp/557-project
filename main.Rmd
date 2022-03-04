@@ -11,7 +11,8 @@ Import all modules & packages
 
 Aquire and clean data
 ```{r}
-
+ghg_time <- read.csv(file.path(".","data","ghg_country_timeseries_df.csv"))
+ghg_country <- read.csv(file.path(".","data","ghg_country_2018_df.csv"))
 ```
 
 #####Part 1: Characterizing GHG trends from 1990 - 2018 (Will be done in Python)######
