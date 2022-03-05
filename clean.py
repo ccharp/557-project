@@ -87,7 +87,7 @@ def clean(output_file):
     ).reset_index()
 
     region_map = {
-        "East Asian and Pacitif": [
+        "East Asian and Pacitic": [
             "American Samoa",
             "Australia",
             "Brunei Darussalam",
@@ -364,7 +364,7 @@ def clean(output_file):
 
         income_mappings[country] = income_class
 
-    wdi_2018 = wdi_ind_pivot[wdi_ind_pivot["Year"] == "2018"]
+    wdi_2018 = wdi_ind_pivot[wdi_ind_pivot["Year"] == 2018]
     wdi_2018.apply(
         lambda row: classify_income(
             row["Country Name"], row["GNI per capita, Atlas method (current US$)"]
