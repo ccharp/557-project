@@ -364,7 +364,7 @@ def clean(output_file):
 
         income_mappings[country] = income_class
 
-    wdi_2018 = wdi_ind_pivot[wdi_ind_pivot["Year"] == 2018]
+    wdi_2018 = wdi_ind_pivot[wdi_ind_pivot["Year"] == "2018"]
     wdi_2018.apply(
         lambda row: classify_income(
             row["Country Name"], row["GNI per capita, Atlas method (current US$)"]
@@ -372,7 +372,7 @@ def clean(output_file):
         axis=1,
     )
 
-    wdi_ind_pivot["Income"] = wdi_ind_pivot.apply(
+    wdi_ind_pivot["Income Level"] = wdi_ind_pivot.apply(
         lambda row: income_mappings[row["Country Name"]],
         axis=1,
     )
