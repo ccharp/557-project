@@ -13,6 +13,9 @@ Aquire and clean data
 ```{r}
 ghg_time <- read.csv(file.path(".","data","ghg_country_timeseries_df.csv"))
 ghg_country <- read.csv(file.path(".","data","ghg_country_2018_df.csv"))
+# install.packages('sandwich')
+library(lmtest)
+library(sandwich)
 ```
 
 #####Part 1: Characterizing GHG trends from 1990 - 2018 (Will be done in Python)######
@@ -92,6 +95,23 @@ ANOVA test for income
 ```
 
 ####Analysis #2: Which variables are related to GHG emissions? ####
+```{r}
+# setup
+log_ghg_capita = log10(ghg_country_2018_df$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
+log_ghg_tot = log10(ghg_country_2018_df$`Total greenhouse gas emissions (kt of CO2 equivalent)`)
+log_ghg_pct = log10(ghg_country_2018_df$`Total greenhouse gas emissions as % of Total (kt of CO2 equivalent)`)
+
+analyze_model = function(model) {
+  v <- vcovHC(model)
+  robust.se <- sqrt(diag(v))
+  result = cbind(summary(model)$coef,robust.se)
+  result = transform(result, robust_t_value = Estimate / robust.se)
+  rdf = nrow(ghg_country_2018_df) - nrow(result) + 1
+  result = transform(result, robust_p_value = 2 * pt(abs(robust_t_value), rdf, lower.tail = FALSE))
+  return (result)
+}
+```
+
 ####Analysis #2 a: Linear Regression analysis to understand relationships####
 ####Analysis #2 a i: Electricity #####
 ####Analysis #2 a i 1: Log(GHG Emissions) ~ Electricity ####
@@ -175,7 +195,10 @@ GHG Emissions % of total ~ Electricity + region
 ####Analysis #2 a ii 1: Log(GHG Emissions) ~ Land use ####
 Check if assumptions are being met for Log(Emissions)
 ```{r}
+land_model = lm(log_ghg_capita ~ `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(Region) + factor(`Income Level`),data=ghg_country_2018_df)
 
+analyze_model(land_model)
+plot(land_model)
 ```
 Are robust methods or transformations necessary?
 ```{r}
