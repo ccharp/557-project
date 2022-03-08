@@ -112,7 +112,7 @@ analyze_model = function(data,model) {
   robust.se <- sqrt(diag(v))
   result = cbind(summary(model)$coef,robust.se)
   result = transform(result, robust_t_value = Estimate / robust.se)
-  rdf = nrow(data) - nrow(result) + 1
+  rdf = nrow(data) - nrow(result)
   result = transform(result, robust_p_value = 2 * pt(abs(robust_t_value), rdf, lower.tail = FALSE))
   return (result)
 }
