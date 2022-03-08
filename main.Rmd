@@ -199,15 +199,94 @@ GHG Emissions % of total ~ Electricity + region
 ```
 ####Analysis #2 a ii: Land use (Agricultural, Arable or Permanent crops) #####
 ####Analysis #2 a ii 1: Log(GHG Emissions) ~ Land use ####
-Check if assumptions are being met for Log(Emissions)
+Clean data (remove rows with nulls)
 ```{r}
-land_model = lm(log_ghg_capita ~ `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(Region) + factor(`Income Level`),data=ghg_country_2018_df)
+land_use_data = subset(ghg_country_2018_df, !is.na(`Forest area (% of land area)`))
+land_use_data = subset(land_use_data, !is.na(`Agricultural land (% of land area)`))
+land_use_data = subset(land_use_data, !is.na(`Arable land (% of land area)`))
+land_use_data = subset(land_use_data, !is.na(Region))
+land_use_data = subset(land_use_data, !is.na(`Income Level`))
+land_use_data = subset(land_use_data, !is.na(`Land area (sq. km)`))
+log_ghg_capita_land_use = log10(land_use_data$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
+
+```
+
+Start by plotting log GHG to different factors
+```{r}
+# Forest - no clear trend
+plot(land_use_data$`Forest area (% of land area)`, log_ghg_capita_land_use)
+# Arable - slight negative (strongest)
+plot(land_use_data$`Arable land (% of land area)`, log_ghg_capita_land_use)
+# Agricultural - slight negative
+plot(land_use_data$`Agricultural land (% of land area)`, log_ghg_capita_land_use)
+# Land area - maybe slight positive, harder to tell at smaller values
+plot(land_use_data$`Land area (sq. km)`, log_ghg_capita_land_use)
+plot(log10(land_use_data$`Land area (sq. km)`), log_ghg_capita_land_use)
+```
+Simple model with just land area (normal and log):
+- Log(land area) shows not great linearity and just ok constant variance
+  - Not statistically significant!
+- Land area shows really bad constant variance. 
+  - Statistically significant! Coefficient estimate of 4.537990e-08 at p-value 5.704285e-05 (using robust SE).
+```{r}
+land_model1a = lm(log_ghg_capita_land_use ~ I(log10(`Land area (sq. km)`)), data=land_use_data)
+analyze_model(land_model1a)
+plot(land_model1a)
+
+land_model1b = lm(log_ghg_capita_land_use ~ `Land area (sq. km)`, data=land_use_data)
+analyze_model(land_model1b)
+plot(land_model1b)
+```
+Model with % arable land:
+- Not great constant variance, ok normal errors, ok linearity
+- Statistically significant! Slight negative coefficient (-0.006583616), robust p-value .006068752
+```{r}
+land_model2 = lm(log_ghg_capita_land_use ~ `Arable land (% of land area)`, data=land_use_data)
+analyze_model(land_model2)
+plot(land_model2)
+```
+Model with % agricultural land:
+- Pretty good on assumptions, including constant variance
+- Statistically significant! Slight negative coefficient (-0.00529277), robust p-value .0006613491
+```{r}
+land_model3 = lm(log_ghg_capita_land_use ~ `Agricultural land (% of land area)`, data=land_use_data)
+analyze_model(land_model3)
+plot(land_model3)
+```
+Model with % forest area:
+- Pretty good on assumptions, ok constant variance
+- NOT statistically significant.
+```{r}
+land_model4 = lm(log_ghg_capita_land_use ~ `Forest area (% of land area)`, data=land_use_data)
+analyze_model(land_model4)
+plot(land_model4)
+```
+Model with % arable land + agriculture:
+- Pretty good on assumptions, ok constant variance
+- NOT statistically significant.
+```{r}
+land_model5= lm(log_ghg_capita_land_use ~ `Arable land (% of land area)` + `Agricultural land (% of land area)`, data=land_use_data)
+analyze_model(land_model5)
+plot(land_model5)
+```
+
+```{r}
+# high income and East Asian and Pacific as control
+# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
+null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_data)
+
+land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + `Agricultural land (% of land area)` + `Arable land (% of land area)` + factor(`Income Level`), data=land_use_data)
 
 analyze_model(land_model)
 plot(land_model)
+
+# F-test with region/income as null model!
+# waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
+waldtest(null_model, land_model, test="F")
 ```
 Are robust methods or transformations necessary?
 ```{r}
+VIF(land_model)
 
 ```
 Create the linear regression model
