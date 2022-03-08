@@ -212,6 +212,9 @@ log_ghg_capita_land_use = log(land_use_data$`Total greenhouse gas emissions per 
 ```
 
 Start by plotting log GHG to different factors
+- From looking at the land size vs. use patterns...
+  - Looks like the higher the percentage of agriculture or arable land, the lower the chance of a small country. Small countries not represented in high % ag.
+  - 
 ```{r}
 # Forest - no clear trend
 plot(land_use_data$`Forest area (% of land area)`, log_ghg_capita_land_use)
@@ -222,9 +225,17 @@ plot(land_use_data$`Agricultural land (% of land area)`, log_ghg_capita_land_use
 # Land area - maybe slight positive, harder to tell at smaller values
 plot(land_use_data$`Land area (sq. km)`, log_ghg_capita_land_use)
 plot(log(land_use_data$`Land area (sq. km)`), log_ghg_capita_land_use)
-
+# Relationship between arable land and agriculture
 plot(land_use_data$`Arable land (% of land area)`, land_use_data$`Agricultural land (% of land area)`)
 plot(I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`), log_ghg_capita_land_use)
+# 
+plot(land_use_data$`Arable land (% of land area)`, log(land_use_data$`Land area (sq. km)`))
+plot(land_use_data$`Agricultural land (% of land area)`, log(land_use_data$`Land area (sq. km)`))
+plot(land_use_data$`Forest area (% of land area)`, log(land_use_data$`Land area (sq. km)`))
+
+plot(land_use_data$`Arable land (% of land area)`, land_use_data$`Land area (sq. km)`)
+plot(land_use_data$`Agricultural land (% of land area)`, land_use_data$`Land area (sq. km)`)
+plot(land_use_data$`Forest area (% of land area)`, land_use_data$`Land area (sq. km)`)
 ```
 Simple model with just land area (normal and log):
 - Log(land area) shows not great linearity and just ok constant variance
@@ -233,11 +244,11 @@ Simple model with just land area (normal and log):
   - Statistically significant! Coefficient estimate of 1.044911e-07 at p-value 5.704285e-05 (using robust SE).
 ```{r}
 land_model1a = lm(log_ghg_capita_land_use ~ I(log(`Land area (sq. km)`)), data=land_use_data)
-analyze_model(land_model1a)
+analyze_model(land_use_data, land_model1a)
 plot(land_model1a)
 
 land_model1b = lm(log_ghg_capita_land_use ~ `Land area (sq. km)`, data=land_use_data)
-analyze_model(land_model1b)
+analyze_model(land_use_data, land_model1b)
 plot(land_model1b)
 ```
 Model with % arable land:
@@ -245,24 +256,24 @@ Model with % arable land:
 - Statistically significant! Slight negative coefficient (-0.01515934), robust p-value .006068752
 ```{r}
 land_model2 = lm(log_ghg_capita_land_use ~ `Arable land (% of land area)`, data=land_use_data)
-analyze_model(land_model2)
+analyze_model(land_use_data, land_model2)
 plot(land_model2)
 ```
 Model with % non-arable agricultural land:
 - Pretty bad on assumptions including constant variance
-- Statistically significant! Slight negative coefficient (-0.008616781), robust p-value 1.901613e-02	
+- Not statistically significant
 ```{r}
 land_model3 = lm(log_ghg_capita_land_use ~ I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`), data=land_use_data)
-analyze_model(land_model3)
+analyze_model(land_use_data, land_model3)
 plot(land_model3)
 ```
 
-Model with % non-arable agricultural land:
+Model with % agricultural land:
 - Pretty good assumptions including constant variance
 - Statistically significant! Slight negative coefficient (-0.01218705	), robust p-value 6.613491e-04	
 ```{r}
 land_model3b = lm(log_ghg_capita_land_use ~ `Agricultural land (% of land area)`, data=land_use_data)
-analyze_model(land_model3b)
+analyze_model(land_use_data, land_model3b)
 plot(land_model3b)
 ```
 Model with % forest area:
@@ -270,15 +281,15 @@ Model with % forest area:
 - NOT statistically significant.
 ```{r}
 land_model4 = lm(log_ghg_capita_land_use ~ `Forest area (% of land area)`, data=land_use_data)
-analyze_model(land_model4)
+analyze_model(land_use_data, land_model4)
 plot(land_model4)
 ```
 Model with % arable land + agriculture:
-- Pretty good on assumptions, ok constant variance
-- Agricultural land is statistically significant
+- Pretty meh on assumptions, ok constant variance
+- Both statistically significant!
 ```{r}
 land_model5= lm(log_ghg_capita_land_use ~ `Arable land (% of land area)` + I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`), data=land_use_data)
-analyze_model(land_model5)
+analyze_model(land_use_data, land_model5)
 plot(land_model5)
 ```
 
@@ -286,18 +297,37 @@ Arable land is a subset of agricultural land... put it all together (doesn't mak
 ```{r}
 # Agricultural and arable
 land_model6a= lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` +`Arable land (% of land area)` + I(`Agricultural land (% of land area)` -`Arable land (% of land area)`) , data=land_use_data)
-analyze_model(land_model6a)
+analyze_model(land_use_data, land_model6a)
 plot(land_model6a)
 
 waldtest(land_model6a, test="Chisq", vcov=vcovHC)
 
 # Just agricultural
 land_model6b= lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` +`Agricultural land (% of land area)`, data=land_use_data)
-analyze_model(land_model6b)
+analyze_model(land_use_data, land_model6b)
 plot(land_model6b)
 
 waldtest(land_model6b, test="Chisq", vcov=vcovHC)
 ```
+
+just forest area? not worth.
+```{r}
+# high income and East Asian and Pacific as control
+# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
+null_model = lm(log_ghg_capita_land_use ~ `GNI per capita, Atlas method (current US$)`, data=land_use_data)
+
+land_use_data$`GNI per capita, Atlas method (current US$)`
+land_modela = lm(log_ghg_capita_land_use ~ `Forest area (% of land area)` + `GNI per capita, Atlas method (current US$)`, data=land_use_data)
+
+analyze_model(land_use_data, land_modela)
+plot(land_modela)
+
+# F-test with region/income as null model!
+waldtest(null_model, land_modela, test="Chisq", vcov=vcovHC)
+waldtest(null_model, land_modela, test="F")
+```
+
+
 Looking at arable land and permanent croplands
 ```{r}
 # high income and East Asian and Pacific as control
@@ -306,30 +336,16 @@ null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_
 
 land_modela = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) + `Arable land (% of land area)` + factor(`Income Level`), data=land_use_data)
 
-analyze_model(land_modela)
+analyze_model(land_use_data, land_modela)
 plot(land_modela)
 
 # F-test with region/income as null model!
 waldtest(null_model, land_modela, test="Chisq", vcov=vcovHC)
 waldtest(null_model, land_modela, test="F")
 ```
-no forest area!!
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ `GNI per capita, Atlas method (current US$)`, data=land_use_data)
-
-land_use_data$`GNI per capita, Atlas method (current US$)`
-land_modela = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + `GNI per capita, Atlas method (current US$)`, data=land_use_data)
-
-analyze_model(land_modela)
-plot(land_modela)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_modela, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_modela, test="F")
-```
-
+THIS IS OUR LAND USE MODEL
+- All statistically significant
+- When we compare model with land area + income to the same with % forest and % ag, we see that standard error is about the same, but coefficient is SMALLER for model including ag + forest. Means that holding % forest and % ag constant, land size tends to have lower increase than when just looking at size.
 ```{r}
 # high income and East Asian and Pacific as control
 # sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
@@ -338,13 +354,67 @@ null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_
 land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(`Income Level`), data=land_use_data)
 
 # I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
-analyze_model(land_model)
+analyze_model(land_use_data, land_model)
 plot(land_model)
 
 # F-test with region/income as null model!
 waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
 waldtest(null_model, land_model, test="F")
 ```
+
+How about log land size?
+```{r}
+# high income and East Asian and Pacific as control
+# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
+null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_data)
+
+land_model = lm(log_ghg_capita_land_use ~ I(log(`Land area (sq. km)`)) + `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(`Income Level`), data=land_use_data)
+
+# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
+analyze_model(land_use_data, land_model)
+plot(land_model)
+
+# F-test with region/income as null model!
+waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
+waldtest(null_model, land_model, test="F")
+```
+
+Does it matter how a big country uses the land? waldtest says yes!
+```{r}
+# high income and East Asian and Pacific as control
+# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
+null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`) + `Land area (sq. km)` , data=land_use_data)
+
+land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(`Income Level`), data=land_use_data)
+
+# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
+analyze_model(land_use_data, land_model)
+plot(land_model)
+
+# F-test with region/income as null model!
+waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
+waldtest(null_model, land_model, test="F")
+```
+
+Just size and income
+```{r}
+# high income and East Asian and Pacific as control
+# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
+null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`) , data=land_use_data)
+
+land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + factor(`Income Level`), data=land_use_data)
+
+# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
+analyze_model(land_use_data, land_model)
+plot(land_model)
+
+# F-test with region/income as null model!
+waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
+waldtest(null_model, land_model, test="F")
+```
+
+#TODO: What about change in forest area + overall percent forest area? 
+
 Are robust methods or transformations necessary?
 ```{r}
 VIF(land_model)
