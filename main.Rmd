@@ -14,8 +14,10 @@ Aquire and clean data
 ghg_time <- read.csv(file.path(".","data","ghg_country_timeseries_df.csv"))
 ghg_country <- read.csv(file.path(".","data","ghg_country_2018_df.csv"))
 # install.packages('sandwich')
+library("regclass")
 library(lmtest)
 library(sandwich)
+library("plyr")
 ```
 
 #####Part 1: Characterizing GHG trends from 1990 - 2018 (Will be done in Python)######
@@ -97,16 +99,20 @@ ANOVA test for income
 ####Analysis #2: Which variables are related to GHG emissions? ####
 ```{r}
 # setup
-log_ghg_capita = log10(ghg_country_2018_df$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
-log_ghg_tot = log10(ghg_country_2018_df$`Total greenhouse gas emissions (kt of CO2 equivalent)`)
-log_ghg_pct = log10(ghg_country_2018_df$`Total greenhouse gas emissions as % of Total (kt of CO2 equivalent)`)
+#log_ghg_capita = log10(ghg_country$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
+#log_ghg_tot = log10(ghg_country$`Total greenhouse gas emissions (kt of CO2 equivalent)`)
+#log_ghg_pct = log10(ghg_country$`Total greenhouse gas emissions as % of Total (kt of CO2 equivalent)`)
 
-analyze_model = function(model) {
+log_ghg_pc = log(ghg_country$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.)
+log_ghg_tot = log(ghg_country$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.)
+log_ghg_per = log(ghg_country$Total.greenhouse.gas.emissions.as...of.Total..kt.of.CO2.equivalent.)
+
+analyze_model = function(data,model) {
   v <- vcovHC(model)
   robust.se <- sqrt(diag(v))
   result = cbind(summary(model)$coef,robust.se)
   result = transform(result, robust_t_value = Estimate / robust.se)
-  rdf = nrow(ghg_country_2018_df) - nrow(result) + 1
+  rdf = nrow(data) - nrow(result) + 1
   result = transform(result, robust_p_value = 2 * pt(abs(robust_t_value), rdf, lower.tail = FALSE))
   return (result)
 }
@@ -275,8 +281,36 @@ GHG Emissions % of total ~ Land use + region
 ####Analysis #2 a iii 1: Log(GHG Emissions) ~ GDP ####
 Check if assumptions are being met for Log(Emissions)
 ```{r}
+log_ghg_pc = log(ghg_country$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.)
+log_ghg_tot = log(ghg_country$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.)
+log_ghg_per = log(ghg_country$Total.greenhouse.gas.emissions.as...of.Total..kt.of.CO2.equivalent.)
 
+
+## Assumption check for per capita emissions
+economy_model_pc <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Region) + factor(Income.Level), data = ghg_country)
+analyze_model(ghg_country,economy_model_pc)
+## ASSUMPTIONS ARE  MET
+count(ghg_country,vars="Region")
+count(ghg_country,vars="Income.Level")
+VIF(economy_model_pc)
 ```
+
+```{r}
+## Assumption check for total emissions
+economy_model_tot <- lm(log_ghg_tot ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Region) + factor(Income.Level), data = ghg_country)
+plot(economy_model_tot)
+summary(economy_model_tot)
+```
+ASSUMPTIONS ARE NOT MET
+
+```{r}
+## Assumption check for percentage emissions
+economy_model_percentage <- lm(log_ghg_per ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Region) + factor(Income.Level), data = ghg_country)
+plot(economy_model_percentage)
+summary(economy_model_percentage)
+```
+ASSUMPTIONS ARE NOT MET
+
 Are robust methods or transformations necessary?
 ```{r}
 
