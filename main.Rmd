@@ -9,7 +9,7 @@ Import all modules & packages
 
 ```
 
-Aquire and clean data
+Acquire and clean data
 ```{r}
 ghg_time <- read.csv(file.path(".","data","ghg_country_timeseries_df.csv"))
 ghg_country <- read.csv(file.path(".","data","ghg_country_2018_df.csv"))
@@ -18,6 +18,9 @@ library("regclass")
 library(lmtest)
 library(sandwich)
 library("plyr")
+library("dplyr")
+library(ggplot2)
+library(boot)
 ```
 
 #####Part 1: Characterizing GHG trends from 1990 - 2018 (Will be done in Python)######
@@ -123,27 +126,79 @@ analyze_model = function(data,model) {
 ####Analysis #2 a i 1: Log(GHG Emissions) ~ Electricity ####
 Check if assumptions are being met for Log(Emissions)
 ```{r}
+df <- ghg_country
+df$elect_access <- df$Access.to.electricity....of.population.
+df$ghg_total <- df$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.
+df$ghg_per_cap <- df$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.
+df$income <- factor(df$Income.Level)
 
+plot(df$elect_access, log(df$ghg_total))
+plot(df$elect_access, log(df$ghg_per_cap))
+boxplot(df$elect_access, log(df$ghg_per_cap))
+
+hist(df$elect_access)
 ```
-Are robust methods or transformations necessary?
-```{r}
+Access to electricity is EXTREMELY skewed. I'll try fitting a linear model to it, but I think we'll get better results
+by segmenting access into two categories: countries with full access and countries that do not (I try this further down)
 
+```{r}
+elect_model <- lm(ghg_per_cap ~ elect_access, data=df)
+plot(elect_model)
+```
+That didn't look good... try log transform.
+```{r}
+elect_model <- lm(I(log(ghg_per_cap)) ~ elect_access, data=df)
+plot(elect_model)
+```
+
+Still no good... just for fun, try a quadratic parameter?
+```{r}
+elect_model <- lm(ghg_per_cap ~ elect_access + I(elect_access^2), data=df)
+plot(elect_model)
+```
+So that was even worse...
+
+It seems robust methods are required. Bootstrap? 
+```{r}
 ```
 Create the linear regression model
 ```{r}
-
 ```
 Include stratification by income and perform F-tests.
 Log(GHG Emissions) ~ Electricity + Income
 ```{r}
-
 ```
-Include stratification by region and perform F-tests.
-Log(GHG Emissions) ~ Electricity + region
+
+Try breaking access to electricity into two categories: full access and partial
 ```{r}
-
+df$full_elect_access <- factor(ifelse(df$elect_access > 99, "yes", "no"))
+plot(factor(df$full_elect_access), log(df$ghg_per_cap))
 ```
+```{r}
+elect_model_fact <- lm(ghg_per_cap ~ full_elect_access, data=df)
+plot(elect_model_fact)
+```
+So that fixes variance... Maybe log transform for normality?
+```{r}
+elect_model_fact_log <- lm(I(log(ghg_per_cap)) ~ full_elect_access, data=df)
+plot(elect_model_fact_log)
 
+summary(elect_model_fact_log)
+```
+A significant result! 
+
+Try adding income categories to the model       
+```{r}
+elect_model_fact_log_cat <- lm(I(log(ghg_per_cap)) ~ full_elect_access + income, data=df)
+plot(elect_model_fact_log_cat)
+
+summary(elect_model_fact_log_cat)
+```
+Is adding the income category significant?
+```{r}
+waldtest(elect_model_fact_log, elect_model_fact_log_cat, test="Chisq", vcov=vcovHC)
+waldtest(elect_model_fact_log, elect_model_fact_log_cat, test="F")
+```
 
 ####Analysis #2 a i 2: GHG Emissions per capita ~ Electricity ####
 Check if assumptions are being met for GHG Emissions per capita
