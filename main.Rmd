@@ -13,6 +13,7 @@ Acquire and clean data
 ```{r}
 ghg_time <- read.csv(file.path(".","data","ghg_country_timeseries_df.csv"))
 ghg_country <- read.csv(file.path(".","data","ghg_country_2018_df.csv"))
+
 # install.packages('sandwich')
 library("regclass")
 library(lmtest)
@@ -99,6 +100,13 @@ ANOVA test for income
 
 ```
 
+####Linear regression model on income
+```{r}
+elect_model_fact_log_cat <- lm(I(log(ghg_per_cap)) ~ income, data=df)
+plot(elect_model_fact_log_cat)
+
+summary(elect_model_fact_log_cat)
+```
 ####Analysis #2: Which variables are related to GHG emissions? ####
 ```{r}
 # setup
