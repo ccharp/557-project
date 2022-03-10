@@ -9,19 +9,15 @@ Import all modules & packages
 
 ```
 
-Acquire and clean data
+Aquire and clean data
 ```{r}
 ghg_time <- read.csv(file.path(".","data","ghg_country_timeseries_df.csv"))
 ghg_country <- read.csv(file.path(".","data","ghg_country_2018_df.csv"))
-
 # install.packages('sandwich')
 library("regclass")
 library(lmtest)
 library(sandwich)
 library("plyr")
-library("dplyr")
-library(ggplot2)
-library(boot)
 ```
 
 #####Part 1: Characterizing GHG trends from 1990 - 2018 (Will be done in Python)######
@@ -100,19 +96,12 @@ ANOVA test for income
 
 ```
 
-####Linear regression model on income
-```{r}
-elect_model_fact_log_cat <- lm(I(log(ghg_per_cap)) ~ income, data=df)
-plot(elect_model_fact_log_cat)
-
-summary(elect_model_fact_log_cat)
-```
 ####Analysis #2: Which variables are related to GHG emissions? ####
 ```{r}
 # setup
-log_ghg_capita = log(ghg_country_2018_df$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
-log_ghg_total = log(ghg_country_2018_df$`Total greenhouse gas emissions (kt of CO2 equivalent)`)
-log_ghg_pct = log(ghg_country_2018_df$`Total greenhouse gas emissions as % of Total (kt of CO2 equivalent)`)
+#log_ghg_capita = log10(ghg_country$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
+#log_ghg_tot = log10(ghg_country$`Total greenhouse gas emissions (kt of CO2 equivalent)`)
+#log_ghg_pct = log10(ghg_country$`Total greenhouse gas emissions as % of Total (kt of CO2 equivalent)`)
 
 log_ghg_pc = log(ghg_country$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.)
 log_ghg_tot = log(ghg_country$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.)
@@ -134,79 +123,27 @@ analyze_model = function(data,model) {
 ####Analysis #2 a i 1: Log(GHG Emissions) ~ Electricity ####
 Check if assumptions are being met for Log(Emissions)
 ```{r}
-df <- ghg_country
-df$elect_access <- df$Access.to.electricity....of.population.
-df$ghg_total <- df$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.
-df$ghg_per_cap <- df$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.
-df$income <- factor(df$Income.Level)
 
-plot(df$elect_access, log(df$ghg_total))
-plot(df$elect_access, log(df$ghg_per_cap))
-boxplot(df$elect_access, log(df$ghg_per_cap))
-
-hist(df$elect_access)
 ```
-Access to electricity is EXTREMELY skewed. I'll try fitting a linear model to it, but I think we'll get better results
-by segmenting access into two categories: countries with full access and countries that do not (I try this further down)
+Are robust methods or transformations necessary?
+```{r}
 
-```{r}
-elect_model <- lm(ghg_per_cap ~ elect_access, data=df)
-plot(elect_model)
-```
-That didn't look good... try log transform.
-```{r}
-elect_model <- lm(I(log(ghg_per_cap)) ~ elect_access, data=df)
-plot(elect_model)
-```
-
-Still no good... just for fun, try a quadratic parameter?
-```{r}
-elect_model <- lm(ghg_per_cap ~ elect_access + I(elect_access^2), data=df)
-plot(elect_model)
-```
-So that was even worse...
-
-It seems robust methods are required. Bootstrap? 
-```{r}
 ```
 Create the linear regression model
 ```{r}
+
 ```
 Include stratification by income and perform F-tests.
 Log(GHG Emissions) ~ Electricity + Income
 ```{r}
+
+```
+Include stratification by region and perform F-tests.
+Log(GHG Emissions) ~ Electricity + region
+```{r}
+
 ```
 
-Try breaking access to electricity into two categories: full access and partial
-```{r}
-df$full_elect_access <- factor(ifelse(df$elect_access > 99, "yes", "no"))
-plot(factor(df$full_elect_access), log(df$ghg_per_cap))
-```
-```{r}
-elect_model_fact <- lm(ghg_per_cap ~ full_elect_access, data=df)
-plot(elect_model_fact)
-```
-So that fixes variance... Maybe log transform for normality?
-```{r}
-elect_model_fact_log <- lm(I(log(ghg_per_cap)) ~ full_elect_access, data=df)
-plot(elect_model_fact_log)
-
-summary(elect_model_fact_log)
-```
-A significant result! 
-
-Try adding income categories to the model       
-```{r}
-elect_model_fact_log_cat <- lm(I(log(ghg_per_cap)) ~ full_elect_access + income, data=df)
-plot(elect_model_fact_log_cat)
-
-summary(elect_model_fact_log_cat)
-```
-Is adding the income category significant?
-```{r}
-waldtest(elect_model_fact_log, elect_model_fact_log_cat, test="Chisq", vcov=vcovHC)
-waldtest(elect_model_fact_log, elect_model_fact_log_cat, test="F")
-```
 
 ####Analysis #2 a i 2: GHG Emissions per capita ~ Electricity ####
 Check if assumptions are being met for GHG Emissions per capita
@@ -262,225 +199,15 @@ GHG Emissions % of total ~ Electricity + region
 ```
 ####Analysis #2 a ii: Land use (Agricultural, Arable or Permanent crops) #####
 ####Analysis #2 a ii 1: Log(GHG Emissions) ~ Land use ####
-Clean data (remove rows with nulls)
+Check if assumptions are being met for Log(Emissions)
 ```{r}
-land_use_data = subset(ghg_country_2018_df, !is.na(`Forest area (% of land area)`))
-land_use_data = subset(land_use_data, !is.na(`Agricultural land (% of land area)`))
-land_use_data = subset(land_use_data, !is.na(`Arable land (% of land area)`))
-land_use_data = subset(land_use_data, !is.na(Region))
-land_use_data = subset(land_use_data, !is.na(`Income Level`))
-land_use_data = subset(land_use_data, !is.na(`Land area (sq. km)`))
-log_ghg_capita_land_use = log(land_use_data$`Total greenhouse gas emissions per capita (kt of CO2 equivalent per person)`)
+land_model = lm(log_ghg_capita ~ `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(Region) + factor(`Income Level`),data=ghg_country_2018_df)
 
-```
-
-Start by plotting log GHG to different factors
-- From looking at the land size vs. use patterns...
-  - Looks like the higher the percentage of agriculture or arable land, the lower the chance of a small country. Small countries not represented in high % ag.
-  - 
-```{r}
-# Forest - no clear trend
-plot(land_use_data$`Forest area (% of land area)`, log_ghg_capita_land_use)
-# Arable - slight negative (strongest)
-plot(land_use_data$`Arable land (% of land area)`, log_ghg_capita_land_use)
-# Agricultural - slight negative
-plot(land_use_data$`Agricultural land (% of land area)`, log_ghg_capita_land_use)
-# Land area - maybe slight positive, harder to tell at smaller values
-plot(land_use_data$`Land area (sq. km)`, log_ghg_capita_land_use)
-plot(log(land_use_data$`Land area (sq. km)`), log_ghg_capita_land_use)
-# Relationship between arable land and agriculture
-plot(land_use_data$`Arable land (% of land area)`, land_use_data$`Agricultural land (% of land area)`)
-plot(I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`), log_ghg_capita_land_use)
-# 
-plot(land_use_data$`Arable land (% of land area)`, log(land_use_data$`Land area (sq. km)`))
-plot(land_use_data$`Agricultural land (% of land area)`, log(land_use_data$`Land area (sq. km)`))
-plot(land_use_data$`Forest area (% of land area)`, log(land_use_data$`Land area (sq. km)`))
-
-plot(land_use_data$`Arable land (% of land area)`, land_use_data$`Land area (sq. km)`)
-plot(land_use_data$`Agricultural land (% of land area)`, land_use_data$`Land area (sq. km)`)
-plot(land_use_data$`Forest area (% of land area)`, land_use_data$`Land area (sq. km)`)
-```
-Simple model with just land area (normal and log):
-- Log(land area) shows not great linearity and just ok constant variance
-  - Not statistically significant!
-- Land area shows really bad constant variance. 
-  - Statistically significant! Coefficient estimate of 1.044911e-07 at p-value 5.704285e-05 (using robust SE).
-```{r}
-land_model1a = lm(log_ghg_capita_land_use ~ I(log(`Land area (sq. km)`)), data=land_use_data)
-analyze_model(land_use_data, land_model1a)
-plot(land_model1a)
-
-land_model1b = lm(log_ghg_capita_land_use ~ `Land area (sq. km)`, data=land_use_data)
-analyze_model(land_use_data, land_model1b)
-plot(land_model1b)
-```
-Model with % arable land:
-- Not great constant variance, ok normal errors, ok linearity
-- Statistically significant! Slight negative coefficient (-0.01515934), robust p-value .006068752
-```{r}
-land_model2 = lm(log_ghg_capita_land_use ~ `Arable land (% of land area)`, data=land_use_data)
-analyze_model(land_use_data, land_model2)
-plot(land_model2)
-```
-Model with % non-arable agricultural land:
-- Pretty bad on assumptions including constant variance
-- Not statistically significant
-```{r}
-land_model3 = lm(log_ghg_capita_land_use ~ I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`), data=land_use_data)
-analyze_model(land_use_data, land_model3)
-plot(land_model3)
-```
-
-Model with % agricultural land:
-- Pretty good assumptions including constant variance
-- Statistically significant! Slight negative coefficient (-0.01218705	), robust p-value 6.613491e-04	
-```{r}
-land_model3b = lm(log_ghg_capita_land_use ~ `Agricultural land (% of land area)`, data=land_use_data)
-analyze_model(land_use_data, land_model3b)
-plot(land_model3b)
-```
-Model with % forest area:
-- Pretty good on assumptions, ok constant variance
-- NOT statistically significant.
-```{r}
-land_model4 = lm(log_ghg_capita_land_use ~ `Forest area (% of land area)`, data=land_use_data)
-analyze_model(land_use_data, land_model4)
-plot(land_model4)
-```
-Model with % arable land + agriculture:
-- Pretty meh on assumptions, ok constant variance
-- Both statistically significant!
-```{r}
-land_model5= lm(log_ghg_capita_land_use ~ `Arable land (% of land area)` + I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`), data=land_use_data)
-analyze_model(land_use_data, land_model5)
-plot(land_model5)
-```
-
-Arable land is a subset of agricultural land... put it all together (doesn't make much of an impact if split out the agricultural into arable vs. permanent crop + pasture, will stick to overall agricultural land).
-```{r}
-# Agricultural and arable
-land_model6a= lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` +`Arable land (% of land area)` + I(`Agricultural land (% of land area)` -`Arable land (% of land area)`) , data=land_use_data)
-analyze_model(land_use_data, land_model6a)
-plot(land_model6a)
-
-waldtest(land_model6a, test="Chisq", vcov=vcovHC)
-
-# Just agricultural
-land_model6b= lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` +`Agricultural land (% of land area)`, data=land_use_data)
-analyze_model(land_use_data, land_model6b)
-plot(land_model6b)
-
-waldtest(land_model6b, test="Chisq", vcov=vcovHC)
-```
-
-just forest area? not worth.
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ `GNI per capita, Atlas method (current US$)`, data=land_use_data)
-
-land_use_data$`GNI per capita, Atlas method (current US$)`
-land_modela = lm(log_ghg_capita_land_use ~ `Forest area (% of land area)` + `GNI per capita, Atlas method (current US$)`, data=land_use_data)
-
-analyze_model(land_use_data, land_modela)
-plot(land_modela)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_modela, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_modela, test="F")
-```
-
-
-Looking at arable land and permanent croplands
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_data)
-
-land_modela = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) + `Arable land (% of land area)` + factor(`Income Level`), data=land_use_data)
-
-analyze_model(land_use_data, land_modela)
-plot(land_modela)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_modela, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_modela, test="F")
-```
-THIS IS OUR LAND USE MODEL
-- All statistically significant
-- When we compare model with land area + income to the same with % forest and % ag, we see that standard error is about the same, but coefficient is SMALLER for model including ag + forest. Means that holding % forest and % ag constant, land size tends to have lower increase than when just looking at size.
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_data)
-
-land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(`Income Level`), data=land_use_data)
-
-# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
-analyze_model(land_use_data, land_model)
+analyze_model(land_model)
 plot(land_model)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_model, test="F")
 ```
-
-How about log land size?
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`), data=land_use_data)
-
-land_model = lm(log_ghg_capita_land_use ~ I(log(`Land area (sq. km)`)) + `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(`Income Level`), data=land_use_data)
-
-# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
-analyze_model(land_use_data, land_model)
-plot(land_model)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_model, test="F")
-```
-
-Does it matter how a big country uses the land? waldtest says yes!
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`) + `Land area (sq. km)` , data=land_use_data)
-
-land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + `Forest area (% of land area)` + `Agricultural land (% of land area)` + factor(`Income Level`), data=land_use_data)
-
-# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
-analyze_model(land_use_data, land_model)
-plot(land_model)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_model, test="F")
-```
-
-Just size and income
-```{r}
-# high income and East Asian and Pacific as control
-# sub-saharan africa has less effect on emissions than east asian and pacific having all the rest equal
-null_model = lm(log_ghg_capita_land_use ~ factor(`Income Level`) , data=land_use_data)
-
-land_model = lm(log_ghg_capita_land_use ~ `Land area (sq. km)` + factor(`Income Level`), data=land_use_data)
-
-# I(land_use_data$`Agricultural land (% of land area)` - land_use_data$`Arable land (% of land area)`) +
-analyze_model(land_use_data, land_model)
-plot(land_model)
-
-# F-test with region/income as null model!
-waldtest(null_model, land_model, test="Chisq", vcov=vcovHC)
-waldtest(null_model, land_model, test="F")
-```
-
-#TODO: What about change in forest area + overall percent forest area? 
-
 Are robust methods or transformations necessary?
 ```{r}
-VIF(land_model)
 
 ```
 Create the linear regression model
@@ -551,39 +278,27 @@ GHG Emissions % of total ~ Land use + region
 ```
 
 ####Analysis #2 a iii: GDP or GDP Growth#####
+```{r}
+lapply(ghg_country,function(x) {length(which(is.na(x)))})
+
+ghg_country_economy <- ghg_country[complete.cases(ghg_country[ , c("GDP..current.US..","GDP.growth..annual...","GDP.per.capita..constant.2015.US..")]),]
+lapply(ghg_country_economy,function(x) {length(which(is.na(x)))})
+
+# log transformations on all response variables
+log_ghg_pc = log(ghg_country_economy$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.)
+log_ghg_tot = log(ghg_country_economy$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.)
+log_ghg_per = log(ghg_country_economy$Total.greenhouse.gas.emissions.as...of.Total..kt.of.CO2.equivalent.)
+```
+
 ####Analysis #2 a iii 1: Log(GHG Emissions) ~ GDP ####
 Check if assumptions are being met for Log(Emissions)
 ```{r}
-log_ghg_pc = log(ghg_country$Total.greenhouse.gas.emissions.per.capita..kt.of.CO2.equivalent.per.person.)
-log_ghg_tot = log(ghg_country$Total.greenhouse.gas.emissions..kt.of.CO2.equivalent.)
-log_ghg_per = log(ghg_country$Total.greenhouse.gas.emissions.as...of.Total..kt.of.CO2.equivalent.)
-
-
-## Assumption check for per capita emissions
-economy_model_pc <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Region) + factor(Income.Level), data = ghg_country)
-analyze_model(ghg_country,economy_model_pc)
-## ASSUMPTIONS ARE  MET
-count(ghg_country,vars="Region")
-count(ghg_country,vars="Income.Level")
-VIF(economy_model_pc)
-```
-
-```{r}
 ## Assumption check for total emissions
-economy_model_tot <- lm(log_ghg_tot ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Region) + factor(Income.Level), data = ghg_country)
+economy_model_tot <- lm(log_ghg_tot ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Income.Level), data = ghg_country_economy)
 plot(economy_model_tot)
 summary(economy_model_tot)
 ```
-ASSUMPTIONS ARE NOT MET
-
-```{r}
-## Assumption check for percentage emissions
-economy_model_percentage <- lm(log_ghg_per ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Region) + factor(Income.Level), data = ghg_country)
-plot(economy_model_percentage)
-summary(economy_model_percentage)
-```
-ASSUMPTIONS ARE NOT MET
-
+#### ASSUMPTIONS ARE NOT MET
 Are robust methods or transformations necessary?
 ```{r}
 
@@ -606,8 +321,18 @@ Log(GHG Emissions) ~ GDP + region
 ####Analysis #2 a iii 2: GHG Emissions per capita ~ GDP ####
 Check if assumptions are being met for GHG Emissions per capita
 ```{r}
-
+## Assumption check for per capita emissions
+economy_model_pc <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Income.Level), data = ghg_country_economy)
+results <- analyze_model(ghg_country_economy,economy_model_pc)
+results[ , c("Estimate","robust.se","robust_p_value")]
+plot(economy_model_pc)
+## ASSUMPTIONS ARE  MET
+summary(economy_model_pc)
+count(ghg_country,vars="Region")
+count(ghg_country,vars="Income.Level")
+VIF(economy_model_pc)
 ```
+In this individual model with GDP, income level surprisingly has a negative impact on GHG. Within the income groups, countries rank in following order of positive to negative correlation with GHG: Upper middle income > Lower middle > Low income
 Are robust methods or transformations necessary?
 ```{r}
 
@@ -625,13 +350,33 @@ Include stratification by region and perform F-tests.
 GHG Emissions per capita ~ GDP + region
 ```{r}
 
+reduced_model <- lm(log_ghg_pc ~ 1,data = ghg_country_economy)
+full_model <- lm(log_ghg_pc ~ GDP.growth..annual...,data = ghg_country_economy)
+anova(reduced_model,full_model)
+
+reduced_model <- lm(log_ghg_pc ~ GDP.growth..annual...,data = ghg_country_economy)
+full_model <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US..,data = ghg_country_economy)
+anova(reduced_model,full_model)
+
+reduced_model <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US..,data = ghg_country_economy)
+full_model <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US..,data = ghg_country_economy)
+anova(reduced_model,full_model)
+
+reduced_model <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. ,data = ghg_country_economy)
+full_model <- lm(log_ghg_pc ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Income.Level) ,data = ghg_country_economy)
+anova(reduced_model,full_model)
 ```
 
 ####Analysis #2 a iii 3: GHG Emissions % of total ~ GDP####
 Check if assumptions are being met for GHG Emissions % of total
 ```{r}
-
+## Assumption check for percentage emissions
+economy_model_percentage <- lm(log_ghg_per ~ GDP.growth..annual... + GDP..current.US.. + GDP.per.capita..constant.2015.US.. + factor(Income.Level), data = ghg_country_economy)
+plot(economy_model_percentage)
+summary(economy_model_percentage)
 ```
+ASSUMPTIONS ARE NOT MET
+
 Are robust methods or transformations necessary?
 ```{r}
 
